@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Value of Advice | Interactive Thesis</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'stone-50': '#fafaf9',
+                        'stone-100': '#f5f5f4',
+                        'stone-800': '#292524',
+                        'primary': '#0f172a', // Slate 900
+                        'accent': '#0ea5e9', // Sky 500
+                        'growth': '#10b981', // Emerald 500
+                        'drag': '#f43f5e', // Rose 500
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #fafaf9; /* Stone 50 */
+            color: #292524;
+        }
+        h1, h2, h3, .serif {
+            font-family: 'Playfair Display', serif;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            height: 400px;
+            max-height: 50vh;
+        }
+        /* Smooth scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .active-tab {
+            border-bottom: 2px solid #0f172a;
+            color: #0f172a;
+            font-weight: 600;
+        }
+    </style>
+    <!-- Chosen Palette: Warm Neutral Foundation (Stone/Slate) with Trustworthy Accents (Sky Blue/Emerald Green/Rose Red) -->
+    <!-- Application Structure Plan:
+        1. Hero/Thesis: The Core Equation (A - B + C). Interactive exploration of the formula.
+        2. The Problem (B): Interactive calculator showing the erosion of returns by fees.
+        3. The Solution (C): The centerpiece. Visualization of "Advisor Gamma" components (Behavioral, Tax, etc.).
+        4. The Evidence: A library view of the Research Plan (Vanguard, Dalbar, etc.) organized by source type.
+        5. Calculator: A "Net Value" estimator combining B reduction and C addition.
+        Why: This structure logically moves from the abstract thesis -> the pain point -> the value add -> the proof -> the personal application.
+    -->
+    <!-- Visualization & Content Choices:
+        - Equation Interaction: HTML/JS toggle. Simple, direct engagement with the core concept.
+        - Fee Drag Chart: Line chart (Chart.js). Visualizes compound loss over time. Best for showing "erosion".
+        - Value Stack Chart: Stacked Bar (Chart.js). Quantifies the components of "C" (Advisor Alpha) cited in research.
+        - Research Grid: Card layout. Organizes the requested "Academic vs Industry" sources clearly.
+        - Methodology: HTML/JS Calculator. Allows user to input their portfolio size to see potential value.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+</head>
+<body class="antialiased selection:bg-stone-200">
+
+    <!-- Navigation -->
+    <nav class="sticky top-0 z-50 bg-stone-50/90 backdrop-blur-md border-b border-stone-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <span class="text-xl font-bold serif text-stone-800 tracking-tight">RIA<span class="text-accent">Thesis</span></span>
+                </div>
+                <div class="hidden sm:flex sm:items-center sm:space-x-8">
+                    <a href="#thesis" class="text-stone-600 hover:text-primary px-3 py-2 text-sm font-medium transition">The Equation</a>
+                    <a href="#costs" class="text-stone-600 hover:text-primary px-3 py-2 text-sm font-medium transition">Control Costs (B)</a>
+                    <a href="#value" class="text-stone-600 hover:text-primary px-3 py-2 text-sm font-medium transition">Add Value (C)</a>
+                    <a href="#evidence" class="text-stone-600 hover:text-primary px-3 py-2 text-sm font-medium transition">Evidence</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Section 1: The Thesis (Hero) -->
+    <section id="thesis" class="pt-20 pb-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto text-center">
+        <h1 class="text-4xl sm:text-5xl md:text-6xl font-bold text-stone-800 mb-6 leading-tight">
+            We don't promise better returns.<br>
+            <span class="text-stone-500 italic text-3xl sm:text-4xl md:text-5xl font-normal">We promise better outcomes.</span>
+        </h1>
+        <p class="mt-4 max-w-2xl mx-auto text-xl text-stone-600 mb-12">
+            Standard investing focuses on beating the market (A). We focus on what you keep.
+        </p>
+        
+        <!-- The Equation Interaction -->
+        <div class="bg-white rounded-2xl shadow-xl p-8 md:p-12 border border-stone-100 max-w-4xl mx-auto">
+            <div class="flex flex-wrap justify-center items-center gap-4 text-3xl sm:text-5xl md:text-6xl font-bold serif select-none">
+                <button onclick="updateThesis('A')" class="p-4 rounded-xl hover:bg-stone-50 transition text-stone-400 hover:text-stone-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-stone-500" id="btn-A">A</button>
+                <span class="text-stone-300">-</span>
+                <button onclick="updateThesis('B')" class="p-4 rounded-xl hover:bg-stone-50 transition text-stone-400 hover:text-drag focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-drag" id="btn-B">B</button>
+                <span class="text-stone-300">+</span>
+                <button onclick="updateThesis('C')" class="p-4 rounded-xl hover:bg-stone-50 transition text-stone-800 hover:text-growth focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-growth bg-stone-50 border border-stone-200" id="btn-C">C</button>
+                <span class="text-stone-300">=</span>
+                <span class="text-primary p-4">Returns</span>
+            </div>
+            
+            <div id="thesis-explanation" class="mt-10 min-h-[160px] transition-all duration-300">
+                <!-- Content injected via JS -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 2: Lowering B (Costs) -->
+    <section id="costs" class="py-20 bg-white border-y border-stone-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+                <div>
+                    <div class="inline-block px-3 py-1 bg-red-50 text-drag text-xs font-bold tracking-wide uppercase rounded-full mb-4">Variable B: Costs</div>
+                    <h2 class="text-3xl md:text-4xl font-bold text-stone-800 mb-6">The Silent Killer of Wealth</h2>
+                    <p class="text-lg text-stone-600 mb-6">
+                        Fees are the one thing you can control with absolute certainty. High advisory fees and wrap fees compound negatively over time, creating a massive drag on your portfolio.
+                    </p>
+                    <div class="bg-stone-50 p-6 rounded-xl border border-stone-200">
+                        <label class="block text-sm font-medium text-stone-700 mb-2">Compare Advisory Fee (%)</label>
+                        <input type="range" id="feeSlider" min="0.5" max="2.5" step="0.1" value="2.0" class="w-full h-2 bg-stone-200 rounded-lg appearance-none cursor-pointer accent-drag">
+                        <div class="flex justify-between text-sm text-stone-500 mt-2">
+                            <span>0.5% (Efficient)</span>
+                            <span id="feeDisplay" class="font-bold text-drag">2.0%</span>
+                            <span>2.5% (Expensive)</span>
+                        </div>
+                        <p class="mt-4 text-sm text-stone-600">
+                            See how a <span id="feeDifferenceText" class="font-bold text-drag">2.0%</span> fee reduces a $1M portfolio over 20 years (assuming 7% gross return).
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="relative">
+                    <div class="chart-container">
+                        <canvas id="costChart"></canvas>
+                    </div>
+                    <div class="absolute -bottom-6 left-1/2 transform -translate-x-1/2 bg-white shadow-lg border border-stone-100 px-6 py-3 rounded-full">
+                        <span class="text-sm font-medium text-stone-500">Lost to Fees: </span>
+                        <span id="lostValueDisplay" class="text-lg font-bold text-drag">$0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 3: Increasing C (Value) -->
+    <section id="value" class="py-20 bg-stone-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <div class="inline-block px-3 py-1 bg-emerald-50 text-growth text-xs font-bold tracking-wide uppercase rounded-full mb-4">Variable C: Value</div>
+                <h2 class="text-3xl md:text-4xl font-bold text-stone-800 mb-4">The Multiplier Effect</h2>
+                <p class="max-w-3xl mx-auto text-lg text-stone-600">
+                    "Higher C" is where we win. Academic and industry research confirms that professional advice—specifically behavioral coaching, tax management, and withdrawal sequencing—adds quantifiable basis points to your net return.
+                </p>
+            </div>
+
+            <!-- Value Components Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+                <!-- Behavioral -->
+                <div class="bg-white p-8 rounded-xl shadow-sm hover:shadow-md transition border border-stone-100 cursor-pointer" onclick="highlightValue('behavior')">
+                    <div class="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center mb-6 text-2xl">🧠</div>
+                    <h3 class="text-xl font-bold text-stone-800 mb-2">Behavioral Coaching</h3>
+                    <p class="text-stone-600 text-sm mb-4">Preventing panic selling and euphoria buying.</p>
+                    <div class="text-2xl font-bold text-accent">~150 bps</div>
+                    <div class="text-xs text-stone-400 mt-1">Source: Vanguard Advisor's Alpha</div>
+                </div>
+
+                <!-- Tax -->
+                <div class="bg-white p-8 rounded-xl shadow-sm hover:shadow-md transition border border-stone-100 cursor-pointer" onclick="highlightValue('tax')">
+                    <div class="w-12 h-12 bg-green-50 rounded-lg flex items-center justify-center mb-6 text-2xl">📊</div>
+                    <h3 class="text-xl font-bold text-stone-800 mb-2">Asset Location & Tax</h3>
+                    <p class="text-stone-600 text-sm mb-4">Placing assets in the right account types.</p>
+                    <div class="text-2xl font-bold text-growth">~0 - 75 bps</div>
+                    <div class="text-xs text-stone-400 mt-1">Source: Morningstar Gamma</div>
+                </div>
+
+                <!-- Withdrawal -->
+                <div class="bg-white p-8 rounded-xl shadow-sm hover:shadow-md transition border border-stone-100 cursor-pointer" onclick="highlightValue('withdraw')">
+                    <div class="w-12 h-12 bg-purple-50 rounded-lg flex items-center justify-center mb-6 text-2xl">⏳</div>
+                    <h3 class="text-xl font-bold text-stone-800 mb-2">Withdrawal Strategy</h3>
+                    <p class="text-stone-600 text-sm mb-4">Dynamic spending and sequencing.</p>
+                    <div class="text-2xl font-bold text-purple-600">~70 bps</div>
+                    <div class="text-xs text-stone-400 mt-1">Source: Envestnet / Russell</div>
+                </div>
+            </div>
+
+            <!-- Value Chart -->
+            <div class="bg-white rounded-2xl shadow-xl p-6 md:p-10 border border-stone-100">
+                <div class="flex flex-col md:flex-row justify-between items-end mb-8">
+                    <div>
+                        <h3 class="text-2xl font-bold text-stone-800">Quantifying "Gamma"</h3>
+                        <p class="text-stone-500 text-sm mt-1">Estimated annual value add of a holistic advisor (in basis points).</p>
+                    </div>
+                    <div class="mt-4 md:mt-0">
+                        <span class="text-sm font-medium text-stone-400 uppercase tracking-wider">Total Potential Value:</span>
+                        <span class="block text-3xl font-bold text-growth">~3.00%</span>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="valueChart"></canvas>
+                </div>
+                <p class="text-center text-xs text-stone-400 mt-6 italic">
+                    Note: Values are estimates based on industry studies (Vanguard, Morningstar, Envestnet) and vary by client situation.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 4: Evidence (Research) -->
+    <section id="evidence" class="py-20 bg-white border-t border-stone-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row md:items-center justify-between mb-12">
+                <div>
+                    <h2 class="text-3xl md:text-4xl font-bold text-stone-800">The Evidence Locker</h2>
+                    <p class="text-stone-600 mt-2">We don't guess. We rely on data. Here is the foundation of our thesis.</p>
+                </div>
+                
+                <!-- Filter Tabs -->
+                <div class="flex space-x-2 mt-4 md:mt-0 bg-stone-100 p-1 rounded-lg">
+                    <button class="px-4 py-2 text-sm font-medium rounded-md bg-white shadow-sm text-stone-800" onclick="filterResearch('all')">All</button>
+                    <button class="px-4 py-2 text-sm font-medium rounded-md text-stone-500 hover:text-stone-800" onclick="filterResearch('academic')">Academic</button>
+                    <button class="px-4 py-2 text-sm font-medium rounded-md text-stone-500 hover:text-stone-800" onclick="filterResearch('industry')">Industry</button>
+                </div>
+            </div>
+
+            <div id="research-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Research Cards Injected via JS -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 5: Calculator (Call to Action) -->
+    <section class="py-20 bg-primary text-white">
+        <div class="max-w-4xl mx-auto px-4 text-center">
+            <h2 class="text-3xl font-bold serif mb-6">What is "C" Worth to You?</h2>
+            <p class="text-stone-300 mb-8 text-lg">
+                Based on a conservative 2% value-add estimate (net of fees), see the difference professional guidance makes over time.
+            </p>
+            
+            <div class="bg-white/10 backdrop-blur-sm p-8 rounded-2xl border border-white/20">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 text-left">
+                    <div>
+                        <label class="block text-sm font-medium text-stone-300 mb-2">Portfolio Size</label>
+                        <div class="relative rounded-md shadow-sm">
+                            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                                <span class="text-stone-400 sm:text-sm">$</span>
+                            </div>
+                            <input type="number" id="portfolioInput" value="500000" class="block w-full rounded-md border-0 bg-white/5 py-3 pl-7 pr-12 text-white placeholder:text-stone-400 focus:ring-2 focus:ring-inset focus:ring-accent sm:text-lg">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-stone-300 mb-2">Time Horizon (Years)</label>
+                        <input type="range" id="yearsInput" min="5" max="30" value="15" class="w-full h-2 bg-white/20 rounded-lg appearance-none cursor-pointer accent-accent mt-3">
+                        <div class="text-right text-accent font-bold mt-1" id="yearsDisplay">15 Years</div>
+                    </div>
+                </div>
+
+                <div class="mt-8 pt-8 border-t border-white/10 flex flex-col sm:flex-row justify-between items-center">
+                    <div class="text-stone-300 text-sm">
+                        Standard Returns: <span id="standardResult" class="font-bold text-white">$1.3M</span>
+                    </div>
+                    <div class="my-4 sm:my-0">
+                        <div class="text-sm text-stone-300 uppercase tracking-widest">Additional Wealth Generated</div>
+                        <div class="text-4xl font-bold text-growth" id="gammaResult">+$410,200</div>
+                    </div>
+                </div>
+            </div>
+            
+            <p class="mt-8 text-sm text-stone-400">
+                *Hypothetical projection assuming 6% market return vs 8% return with advisor value add. For illustrative purposes only.
+            </p>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-stone-900 text-stone-500 py-12 border-t border-stone-800">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+            <p class="mb-4">&copy; 2025 RIA Startup. All rights reserved.</p>
+            <p class="text-xs max-w-2xl mx-auto">
+                Disclaimer: The information provided here is for educational purposes only and does not constitute investment advice. 
+                References to "Advisor Gamma", "Alpha", and specific basis point values are based on third-party research 
+                (Vanguard, Morningstar, etc.) and may not reflect actual client experiences. Past performance is not indicative of future results.
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // --- Data & State ---
+        const thesisData = {
+            'A': {
+                title: 'A = Average Market Return',
+                desc: 'This is the baseline. Most investors chase "A" by trying to pick winning stocks. History shows this is a losing game. We accept the market return using low-cost, diversified index funds.',
+                color: 'text-stone-500'
+            },
+            'B': {
+                title: 'B = Costs & Mistakes',
+                desc: 'The drag. High expense ratios, trading costs, taxes, and emotional reactions. A typical unadvised investor loses significantly here. Our goal is to minimize B to near zero.',
+                color: 'text-drag'
+            },
+            'C': {
+                title: 'C = Value of Advice',
+                desc: 'The gain. Systematic rebalancing, asset location, tax-loss harvesting, and behavioral coaching. This is "Gamma". By increasing C, we improve your net outcome without needing to beat the market.',
+                color: 'text-growth'
+            }
+        };
+
+        const researchItems = [
+            {
+                type: 'academic',
+                title: 'Quantitative Analysis of Investor Behavior',
+                source: 'Dalbar Inc.',
+                headline: 'The Behavioral Gap is Real',
+                why: 'Shows the massive difference between fund performance and actual investor returns due to emotional trading.',
+                link: '#',
+                tags: ['Behavior', 'Outcomes']
+            },
+            {
+                type: 'industry',
+                title: 'Putting a Value on Your Value',
+                source: 'Vanguard',
+                headline: 'Advisor Alpha ~3.00%',
+                why: 'Breaks down value into modular components: Behavioral Coaching (1.50%), Wealth Management (>1%), Rebalancing, etc.',
+                link: '#',
+                tags: ['Alpha', 'Quant']
+            },
+            {
+                type: 'industry',
+                title: 'Morningstar Gamma',
+                source: 'Morningstar',
+                headline: 'Better Decisions = Better Retirement',
+                why: 'Focuses on "Gamma" - value created by making intelligent financial planning decisions rather than product selection.',
+                link: '#',
+                tags: ['Gamma', 'Planning']
+            },
+            {
+                type: 'academic',
+                title: 'Capital Sigma: The Return on Advice',
+                source: 'Envestnet',
+                headline: 'Advice Adds ~3% annually',
+                why: 'Provides a robust framework for quantifying value across financial planning, investment selection, and tax management.',
+                link: '#',
+                tags: ['Sigma', 'Tax']
+            },
+            {
+                type: 'other',
+                title: 'Warren Buffett\'s Shareholder Letters',
+                source: 'Berkshire Hathaway',
+                headline: 'Discipline beats Brilliance',
+                why: 'Famous support for low-cost indexing combined with emotional discipline.',
+                link: '#',
+                tags: ['Wisdom', 'Quotes']
+            },
+             {
+                type: 'industry',
+                title: 'The Value of an Advisor',
+                source: 'Russell Investments',
+                headline: 'Tax-smart investing is key',
+                why: 'Highlights the massive impact of tax management and withdrawal sequencing on long-term wealth.',
+                link: '#',
+                tags: ['Tax', 'Sequencing']
+            }
+        ];
+
+        // --- Interaction Logic ---
+
+        // Thesis Explorer
+        function updateThesis(key) {
+            const container = document.getElementById('thesis-explanation');
+            const data = thesisData[key];
+            
+            // Reset buttons
+            ['A', 'B', 'C'].forEach(k => {
+                const btn = document.getElementById(`btn-${k}`);
+                btn.classList.remove('ring-2', 'ring-offset-2', 'bg-white', 'shadow-lg');
+                btn.classList.add('bg-transparent');
+            });
+            
+            // Activate button
+            const activeBtn = document.getElementById(`btn-${key}`);
+            activeBtn.classList.remove('bg-transparent');
+            activeBtn.classList.add('bg-white', 'shadow-lg', 'ring-2', 'ring-offset-2');
+            
+            // Update content with fade effect
+            container.style.opacity = '0';
+            setTimeout(() => {
+                container.innerHTML = `
+                    <h3 class="text-2xl font-bold ${data.color} mb-3">${data.title}</h3>
+                    <p class="text-stone-600 text-lg leading-relaxed">${data.desc}</p>
+                `;
+                container.style.opacity = '1';
+            }, 300);
+        }
+
+        // Initialize Thesis
+        document.addEventListener('DOMContentLoaded', () => {
+            updateThesis('C');
+            initCostChart();
+            initValueChart();
+            renderResearch('all');
+            updateCalculator();
+        });
+
+        // --- Research Grid Logic ---
+        function renderResearch(filter) {
+            const grid = document.getElementById('research-grid');
+            grid.innerHTML = '';
+            
+            const filtered = filter === 'all' ? researchItems : researchItems.filter(item => item.type === filter);
+            
+            filtered.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'bg-white p-6 rounded-xl border border-stone-100 card-hover flex flex-col h-full';
+                card.innerHTML = `
+                    <div class="flex justify-between items-start mb-4">
+                        <span class="inline-block px-2 py-1 bg-stone-100 text-stone-500 text-xs font-bold uppercase rounded tracking-wider">${item.source}</span>
+                        ${item.type === 'academic' ? '<span class="text-xs text-stone-400">🎓 Academic</span>' : ''}
+                        ${item.type === 'industry' ? '<span class="text-xs text-stone-400">🏢 Industry</span>' : ''}
+                    </div>
+                    <h3 class="text-xl font-bold text-stone-800 mb-2 leading-tight">"${item.headline}"</h3>
+                    <p class="text-sm text-stone-500 italic mb-4">${item.title}</p>
+                    <p class="text-stone-600 text-sm mb-6 flex-grow">${item.why}</p>
+                    
+                    <div class="mt-auto border-t border-stone-100 pt-4">
+                        <div class="flex flex-wrap gap-2">
+                            ${item.tags.map(tag => `<span class="text-xs text-accent bg-blue-50 px-2 py-1 rounded-md">#${tag}</span>`).join('')}
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function filterResearch(type) {
+            renderResearch(type);
+        }
+
+        // --- Chart.js Implementations ---
+
+        // 1. Cost Chart (The Drag)
+        let costChart;
+        function initCostChart() {
+            const ctx = document.getElementById('costChart').getContext('2d');
+            
+            // Initial Data Generation (20 years)
+            const labels = Array.from({length: 21}, (_, i) => `Year ${i}`);
+            
+            costChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Portfolio with Efficient Fees (0.5%)',
+                            data: [], // Populated by update function
+                            borderColor: '#10b981', // Emerald
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Portfolio with High Fees',
+                            data: [], // Populated by update function
+                            borderColor: '#f43f5e', // Rose
+                            backgroundColor: 'transparent',
+                            borderDash: [5, 5],
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumSignificantDigits: 3 }).format(context.parsed.y);
+                                    }
+                                    return label;
+                                }
+                            }
+                        },
+                        legend: { position: 'bottom' }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            grid: { color: '#f5f5f4' }
+                        },
+                        x: {
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+            
+            updateCostChart();
+        }
+
+        const feeSlider = document.getElementById('feeSlider');
+        feeSlider.addEventListener('input', updateCostChart);
+
+        function updateCostChart() {
+            const highFee = parseFloat(feeSlider.value) / 100;
+            const lowFee = 0.005; // 0.5%
+            const principal = 1000000;
+            const marketReturn = 0.07;
+            
+            document.getElementById('feeDisplay').textContent = (highFee * 100).toFixed(1) + '%';
+            document.getElementById('feeDifferenceText').textContent = (highFee * 100).toFixed(1) + '%';
+
+            const lowFeeData = [];
+            const highFeeData = [];
+            
+            for(let i=0; i<=20; i++) {
+                lowFeeData.push(principal * Math.pow(1 + (marketReturn - lowFee), i));
+                highFeeData.push(principal * Math.pow(1 + (marketReturn - highFee), i));
+            }
+            
+            costChart.data.datasets[0].data = lowFeeData;
+            costChart.data.datasets[1].data = highFeeData;
+            costChart.data.datasets[1].label = `Portfolio with ${(highFee*100).toFixed(1)}% Fees`;
+            
+            costChart.update();
+            
+            const diff = lowFeeData[20] - highFeeData[20];
+            document.getElementById('lostValueDisplay').textContent = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumSignificantDigits: 3 }).format(diff);
+        }
+
+        // 2. Value Stack Chart (The Solution)
+        function initValueChart() {
+            const ctx = document.getElementById('valueChart').getContext('2d');
+            
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Average Investor', 'With Advisor Value'],
+                    datasets: [
+                        {
+                            label: 'Market Return (A)',
+                            data: [6, 6],
+                            backgroundColor: '#e5e7eb', // Gray 200
+                            stack: 'Stack 0',
+                        },
+                        {
+                            label: 'Cost Drag (B)',
+                            data: [-2, -0.5], // High cost vs low cost
+                            backgroundColor: '#f43f5e', // Rose
+                            stack: 'Stack 0',
+                        },
+                        {
+                            label: 'Behavioral Coaching',
+                            data: [0, 1.5],
+                            backgroundColor: '#0ea5e9', // Sky
+                            stack: 'Stack 0',
+                        },
+                        {
+                            label: 'Tax/Rebalancing',
+                            data: [0, 0.8],
+                            backgroundColor: '#10b981', // Emerald
+                            stack: 'Stack 0',
+                        },
+                        {
+                            label: 'Withdrawal Strat',
+                            data: [0, 0.7],
+                            backgroundColor: '#8b5cf6', // Violet
+                            stack: 'Stack 0',
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + context.parsed.y + '%';
+                                }
+                            }
+                        },
+                        legend: { position: 'bottom' }
+                    },
+                    scales: {
+                        y: {
+                            stacked: true,
+                            title: { display: true, text: 'Annual Return Impact (%)' }
+                        },
+                        x: {
+                            stacked: true,
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+        }
+
+        // --- Calculator Logic ---
+        const portfolioInput = document.getElementById('portfolioInput');
+        const yearsInput = document.getElementById('yearsInput');
+        
+        portfolioInput.addEventListener('input', updateCalculator);
+        yearsInput.addEventListener('input', updateCalculator);
+        
+        function updateCalculator() {
+            const p = parseFloat(portfolioInput.value) || 0;
+            const t = parseInt(yearsInput.value);
+            document.getElementById('yearsDisplay').innerText = t + " Years";
+            
+            // Scenario 1: Standard (6% return)
+            const r1 = 0.06;
+            const fv1 = p * Math.pow(1 + r1, t);
+            
+            // Scenario 2: With "Higher C" (8% return - 2% alpha net of fees)
+            const r2 = 0.08;
+            const fv2 = p * Math.pow(1 + r2, t);
+            
+            const diff = fv2 - fv1;
+            
+            document.getElementById('standardResult').innerText = formatMoney(fv1);
+            document.getElementById('gammaResult').innerText = "+" + formatMoney(diff);
+        }
+        
+        function formatMoney(amount) {
+            if (amount >= 1000000) {
+                return '$' + (amount / 1000000).toFixed(1) + 'M';
+            }
+            return '$' + (amount / 1000).toFixed(0) + 'k';
+        }
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+    <link rel="icon" type="image/png" href="./favicon.png" />
+    <title>Financial Fee Savings Calculator</title>
+    <meta name="description" content="Calculate and visualize potential savings on investment fees over time by comparing percentage-based fees with a flat fee structure. Interactive calculator with dynamic charts and projections.">
+    
+    <!-- Preconnect to Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <!-- Load Montserrat (headings) and Source Sans 3 (body) -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet">
+    <script type="module" crossorigin src="./assets/index-DOuy2l2-.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-BOOapMBg.css">
+  
+    <style>
+      header, footer { display: none !important; }
+      body { padding: 0 !important; }
+    </style>
+  
+</head>
+  <body>
+    <div id="root"></div>
+  
+    <script>
+      (function () {
+        if (window.parent === window) return;
+
+        function parseCurrency(text) {
+          if (!text) return null;
+          var match = String(text).match(/\$\s*([0-9]{1,3}(?:,[0-9]{3})*|[0-9]+)(?:\.[0-9]{1,2})?/);
+          if (!match) return null;
+          var numeric = Number(match[1].replace(/,/g, ''));
+          if (!isFinite(numeric)) return null;
+          return { formatted: match[0].replace(/\s+/g, ''), value: numeric };
+        }
+
+        function findTotalSavings() {
+          var root = document.body;
+          if (!root) return null;
+          var nodes = root.querySelectorAll('div,span,p,strong,b,h1,h2,h3,h4,h5,h6');
+          for (var i = 0; i < nodes.length; i++) {
+            var t = (nodes[i].innerText || nodes[i].textContent || '').trim();
+            if (!t) continue;
+            if (/Total\s+Savings/i.test(t)) {
+              var parsed = parseCurrency(t);
+              if (parsed) return parsed;
+              var parent = nodes[i].parentElement;
+              if (parent) {
+                var parentText = (parent.innerText || parent.textContent || '').trim();
+                var parsedParent = parseCurrency(parentText);
+                if (parsedParent) return parsedParent;
+              }
+            }
+          }
+          return null;
+        }
+
+        var lastSent = '';
+        function send() {
+          try {
+            var result = findTotalSavings();
+            if (!result) return;
+            var key = result.formatted;
+            if (key === lastSent) return;
+            lastSent = key;
+            window.parent.postMessage({ type: 'ria-total-savings', formatted: result.formatted, value: result.value }, '*');
+          } catch (e) {}
+        }
+
+        var scheduled = false;
+        function schedule() {
+          if (scheduled) return;
+          scheduled = true;
+          setTimeout(function () {
+            scheduled = false;
+            send();
+          }, 150);
+        }
+
+        if (document.readyState === 'complete' || document.readyState === 'interactive') {
+          schedule();
+        } else {
+          document.addEventListener('DOMContentLoaded', schedule, { once: true });
+        }
+
+        var obs = new MutationObserver(schedule);
+        obs.observe(document.documentElement, { childList: true, subtree: true, characterData: true });
+        setInterval(send, 2000);
+      })();
+    </script>
+  
+</body>
+</html>

@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Silent Killer of Wealth</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'stone-50': '#fafaf9',
+                        'stone-100': '#f5f5f4',
+                        'stone-200': '#e7e5e4',
+                        'stone-800': '#292524',
+                        'drag': '#f43f5e', // Rose 500
+                        'growth': '#10b981', // Emerald 500
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #fafaf9;
+        }
+        h2 {
+            font-family: 'Playfair Display', serif;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            height: 400px;
+            max-height: 50vh;
+        }
+
+        /* --- SLIDER CSS --- */
+        input[type=range] {
+            -webkit-appearance: none; 
+            background: transparent; 
+        }
+
+        /* Webkit (Chrome, Safari, Edge) */
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 20px;
+            width: 20px;
+            border-radius: 50%;
+            background: #f43f5e; /* Rose 500 */
+            cursor: pointer;
+            margin-top: -8px; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border: 2px solid white;
+        }
+        
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 6px;
+            cursor: pointer;
+            background: #d6d3d1; /* Stone 300 - Darkened to contrasting against stone-200 card */
+            border-radius: 4px;
+        }
+
+        /* Firefox */
+        input[type=range]::-moz-range-thumb {
+            height: 20px;
+            width: 20px;
+            border: 2px solid white;
+            border-radius: 50%;
+            background: #f43f5e;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        input[type=range]::-moz-range-track {
+            width: 100%;
+            height: 6px;
+            cursor: pointer;
+            background: #d6d3d1; /* Stone 300 */
+            border-radius: 4px;
+        }
+
+        input[type=range]:focus {
+            outline: none; 
+        }
+    </style>
+</head>
+<body class="antialiased selection:bg-stone-200 flex items-center justify-center min-h-screen">
+
+    <!-- Section Wrapper -->
+    <section class="w-full bg-white py-20 border-y border-stone-200 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
+                
+                <!-- Left Column: Narrative & Controls -->
+                <div>
+                    <div class="inline-block px-3 py-1 bg-red-50 text-drag text-xs font-bold tracking-wide uppercase rounded-full mb-4">Variable B: Costs</div>
+                    <h2 class="text-3xl md:text-4xl font-bold text-stone-800 mb-6 leading-tight">The Silent Killer of Wealth</h2>
+                    <p class="text-lg text-stone-600 mb-8 leading-relaxed">
+                        Fees are the one thing you can control with absolute certainty. High advisory fees and wrap fees compound negatively over time, creating a massive drag on your portfolio. <strong>See how much of your hard-earned money you can keep by paying a flat fee of $100/month for expert advice.</strong>
+                    </p>
+                    
+                    <!-- Control Card -->
+                    <div class="bg-stone-200 p-6 rounded-xl border border-stone-300 space-y-4">
+                        
+                        <!-- Input 1: Starting Portfolio -->
+                        <div>
+                            <div class="flex justify-between items-end mb-1">
+                                <label class="text-sm font-medium text-stone-700">Starting Portfolio Value ($250k - $5M)</label>
+                                <span id="portfolioDisplay" class="font-bold text-stone-800 text-lg">$1,000,000</span>
+                            </div>
+                            <input type="range" id="portfolioSlider" min="250000" max="5000000" step="50000" value="1000000" class="w-full">
+                        </div>
+
+                        <!-- Input 4: Fee (Moved here) -->
+                        <div class="pt-4 border-t border-stone-200">
+                            <div class="flex justify-between items-end mb-1">
+                                <label class="text-sm font-medium text-stone-700">Annual Fee (0% - 2.5%)</label>
+                                <span id="feeDisplay" class="font-bold text-drag text-lg">1.0%</span>
+                            </div>
+                            <input type="range" id="feeSlider" min="0.0" max="2.5" step="0.1" value="1.0" class="w-full">
+                        </div>
+
+                        <!-- Input 2: Time Horizon -->
+                        <div class="pt-4 border-t border-stone-200">
+                            <div class="flex justify-between items-end mb-1">
+                                <label class="text-sm font-medium text-stone-700">Time Horizon (5 - 50 Years)</label>
+                                <span id="yearsDisplay" class="font-bold text-stone-800 text-lg">10 Years</span>
+                            </div>
+                            <input type="range" id="yearsSlider" min="5" max="50" step="1" value="10" class="w-full">
+                        </div>
+
+                        <!-- Input 3: Portfolio Growth -->
+                        <div class="pt-4 border-t border-stone-200">
+                            <div class="flex justify-between items-end mb-1">
+                                <label class="text-sm font-medium text-stone-700">Portfolio Growth (3% - 12%)</label>
+                                <span id="growthDisplay" class="font-bold text-stone-800 text-lg">8.0%</span>
+                            </div>
+                            <input type="range" id="growthSlider" min="3.0" max="12.0" step="0.5" value="8.0" class="w-full">
+                        </div>
+                        
+                    </div>
+                </div>
+                
+                <!-- Right Column: Visualization -->
+                <div class="relative">
+                    <div class="chart-container">
+                        <canvas id="costChart"></canvas>
+                    </div>
+                    
+                    <!-- Floating Badge -->
+                    <div class="absolute -bottom-6 left-1/2 transform -translate-x-1/2 bg-white shadow-xl border border-stone-100 px-6 py-3 rounded-full flex items-center space-x-2 whitespace-nowrap z-10">
+                        <span class="text-sm font-medium text-stone-500 uppercase tracking-wide">Lost to Fees:</span>
+                        <span id="lostValueDisplay" class="text-xl font-bold text-drag">$0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        // --- Logic & Chart Initialization ---
+        
+        // DOM Elements
+        const portfolioSlider = document.getElementById('portfolioSlider');
+        const yearsSlider = document.getElementById('yearsSlider');
+        const growthSlider = document.getElementById('growthSlider');
+        const feeSlider = document.getElementById('feeSlider');
+        
+        const portfolioDisplay = document.getElementById('portfolioDisplay');
+        const yearsDisplay = document.getElementById('yearsDisplay');
+        const growthDisplay = document.getElementById('growthDisplay');
+        const feeDisplay = document.getElementById('feeDisplay');
+        
+        // Removed elements: feeDifferenceText and yearsText, as they were causing the error.
+        const lostValueDisplay = document.getElementById('lostValueDisplay');
+        
+        let costChart;
+
+        function initCostChart() {
+            const ctx = document.getElementById('costChart').getContext('2d');
+            
+            // Initial Placeholder Data
+            const labels = [];
+            
+            costChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Flat Fee Portfolio ($100/mo)',
+                            data: [],
+                            borderColor: '#10b981', // Emerald
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)', // Light Green Fill
+                            fill: true,
+                            tension: 0.4,
+                            pointRadius: 4,
+                            pointHoverRadius: 6,
+                            pointBackgroundColor: '#ffffff',
+                            pointBorderColor: '#10b981',
+                            pointBorderWidth: 2,
+                        },
+                        {
+                            label: 'High Fee Portfolio',
+                            data: [],
+                            borderColor: '#f43f5e', // Rose / Drag color
+                            backgroundColor: 'transparent',
+                            borderDash: [5, 5],
+                            tension: 0.4,
+                            pointRadius: 4,
+                            pointHoverRadius: 6,
+                            pointBackgroundColor: '#ffffff',
+                            pointBorderColor: '#f43f5e',
+                            pointBorderWidth: 2,
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    plugins: {
+                        tooltip: {
+                            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                            titleColor: '#1c1917',
+                            bodyColor: '#44403c',
+                            borderColor: '#e7e5e4',
+                            borderWidth: 1,
+                            padding: 12,
+                            titleFont: { size: 13, family: "'Inter', sans-serif" },
+                            bodyFont: { size: 13, family: "'Inter', sans-serif" },
+                            displayColors: true,
+                            boxPadding: 4,
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(context.parsed.y);
+                                    }
+                                    return label;
+                                }
+                            }
+                        },
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 20,
+                                font: {
+                                    family: "'Inter', sans-serif",
+                                    size: 12
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            grid: {
+                                color: '#f5f5f4',
+                                drawBorder: false
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    if(value >= 1000000) return '$' + value / 1000000 + 'M';
+                                    if(value >= 1000) return '$' + value / 1000 + 'k';
+                                    return value;
+                                },
+                                font: {
+                                    family: "'Inter', sans-serif",
+                                    size: 11
+                                },
+                                color: '#a8a29e',
+                                padding: 10
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                maxRotation: 45,
+                                minRotation: 45,
+                                font: {
+                                    family: "'Inter', sans-serif",
+                                    size: 11
+                                },
+                                color: '#a8a29e'
+                            }
+                        }
+                    }
+                }
+            });
+            
+            updateCostChart();
+        }
+
+        function updateCostChart() {
+            // 1. Get Values
+            const principal = parseFloat(portfolioSlider.value);
+            const years = parseInt(yearsSlider.value);
+            const growthRate = parseFloat(growthSlider.value) / 100;
+            const highFee = parseFloat(feeSlider.value) / 100;
+            const marketReturn = growthRate; 
+            
+            // Flat Fee Config
+            const flatFeeAnnual = 1200; // $100/mo * 12
+            
+            // 2. Update Text Displays
+            portfolioDisplay.textContent = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(principal);
+            yearsDisplay.textContent = years + " Years";
+            growthDisplay.textContent = (growthRate * 100).toFixed(1) + '%';
+            
+            const feePercentText = (highFee * 100).toFixed(1) + '%';
+            feeDisplay.textContent = feePercentText;
+            
+
+            // 3. Generate Labels & Calculate Growth Curves
+            const newLabels = [];
+            const lowFeeData = [];
+            const highFeeData = [];
+            
+            // Initialize Values for iterative calculation
+            let currentEfficient = principal;
+            
+            for(let i=0; i<=years; i++) {
+                newLabels.push(`Year ${i}`);
+                
+                if (i === 0) {
+                    lowFeeData.push(principal);
+                    highFeeData.push(principal);
+                } else {
+                    // Efficient (Flat Fee): Grows then subtracts $1200
+                    currentEfficient = currentEfficient * (1 + marketReturn) - flatFeeAnnual;
+                    lowFeeData.push(currentEfficient);
+                    
+                    // High Fee (Percentage): Grows at (Rate - Fee)
+                    // P * (1 + r - f)^t
+                    highFeeData.push(principal * Math.pow(1 + (marketReturn - highFee), i));
+                }
+            }
+            
+            // 4. Update Chart Data
+            costChart.data.labels = newLabels;
+            costChart.data.datasets[0].data = lowFeeData;
+            costChart.data.datasets[1].data = highFeeData;
+            costChart.data.datasets[1].label = `High Fee Portfolio (${feePercentText})`;
+            
+            // 5. Update Chart
+            costChart.update();
+            
+            // 6. Update "Lost to Fees" Badge
+            const diff = lowFeeData[years] - highFeeData[years];
+            lostValueDisplay.textContent = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(diff);
+        }
+
+        // Event Listeners
+        portfolioSlider.addEventListener('input', updateCostChart);
+        yearsSlider.addEventListener('input', updateCostChart);
+        growthSlider.addEventListener('input', updateCostChart);
+        feeSlider.addEventListener('input', updateCostChart);
+
+        // Initialize on Load
+        window.addEventListener('load', initCostChart);
+
+    </script>
+</body>
+</html>
